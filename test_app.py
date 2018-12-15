@@ -3,12 +3,13 @@ from wsgiref.simple_server import make_server
 
 app = App()
 
-@app.route('/', 'GET')
+@app.route('/(?P<name>\w+)', 'GET')
 # TODO:  request / start_responseの引数を入力不要に
-def hello(request, start_response): 
+def hello(request, start_response, name): 
     start_response('200 OK', [('Content-type', 'text/plain; charset=utf-8')])
     # encodeを不要にしたい
-    return ['Hello World'.encode("utf-8")]
+    body = 'Hello {name}'.format(name=name)
+    return [body.encode("utf-8")]
 
 @app.route('/night', 'GET')
 def goodnight(request, start_response):
