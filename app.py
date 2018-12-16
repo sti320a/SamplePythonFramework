@@ -1,6 +1,7 @@
 from http.client import responses as http_response
 from wsgiref.headers import Headers
 import re
+import json
 
 
 def http404(env, start_response):
@@ -123,9 +124,7 @@ class JSONResponse(Response):
 
     @property
     def body(self):
-        return [json.dumps(self.dic, **self.json_dump_args.encode(self.charset))]
-
-
+        return [json.dumps(self.dic, **self.json_dump_args).encode(self.charset)]
 
 
 class App:

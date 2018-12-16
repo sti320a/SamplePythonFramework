@@ -1,11 +1,11 @@
-from app import App, Response
+from app import App, Response, JSONResponse
 from wsgiref.simple_server import make_server
 
 app = App()
 
 @app.route('/(?P<name>\w+)', 'GET')
 def hello(request, name): 
-    return Response('Hello {name}'.format(name=name), headers={'foo':'bar'})
+    return JSONResponse({'foo':'bar'})
 
 @app.route('/night', 'GET')
 def goodnight(request):
