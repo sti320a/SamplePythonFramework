@@ -2,6 +2,8 @@ from http.client import responses as http_response
 from wsgiref.headers import Headers
 import re
 import json
+import os
+from jinja2 import Environment, FileSystemLoader
 
 
 def http404(env, start_response):
@@ -117,7 +119,7 @@ class Response:
 class JSONResponse(Response):
     default_content_type = 'text/json; charset=UTF-8'
 
-    def __init__(self, dic, status=200, headers=None, charset=None, **dump_args):
+    def __init__(self, dic, status=200, headers=None, charset='utf-8', **dump_args):
         self.dic = dic
         self.json_dump_args = dump_args
         super().__init__('', status=status, headers=headers, charset=charset)
@@ -127,9 +129,25 @@ class JSONResponse(Response):
         return [json.dumps(self.dic, **self.json_dump_args).encode(self.charset)]
 
 
+class TemplateResponse(Response):
+    default_content_type = 'text/html; charset=UTF-8'
+
+    def __init__(self, filename, status=200 , headers=None, charset='utf-8', **tpl_args):
+        self.filename = filename
+        self.tpl_args = tpl_args
+        super().__init__(body=', status=status', headers=headers, charset=charset)
+
+    def render_body(self, jinja2_environment):
+        template = jinja2_environment.get_template(self.filename)
+        return template.render(**self.tpl_args).encode(self.charset)
+
+
 class App:
-    def __init__(self):
+    def __init__(self, templates=None):
         self.router = Router()
+        if templates is None:
+            templates = [os.path.abspath('.'), 'templates']
+            self.jinja2_environment = Environment(loader=FileSystemLoader(templates))
 
     def route(self, path=None, method='GET', callback=None):
         def decorator(callback_func):
@@ -142,5 +160,9 @@ class App:
         callback, url_vars = self.router.match(request.method, request.path)
         response = callback(request, **url_vars)
         start_response(response.status_code, response.header_list)
+
+        if isinstance(response, TemplateResponse):
+            return [response.render_body(self.jinja2_environment).encode('utf-8')]
+
         return response.body
 
