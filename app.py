@@ -112,6 +112,22 @@ class Response:
             return [self._body.encode(self.charset)]
         return [self._body]
 
+
+class JSONResponse(Response):
+    default_content_type = 'text/json; charset=UTF-8'
+
+    def __init__(self, dic, status=200, headers=None, charset=None, **dump_args):
+        self.dic = dic
+        self.json_dump_args = dump_args
+        super().__init__('', status=status, headers=headers, charset=charset)
+
+    @property
+    def body(self):
+        return [json.dumps(self.dic, **self.json_dump_args.encode(self.charset))]
+
+
+
+
 class App:
     def __init__(self):
         self.router = Router()
