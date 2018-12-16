@@ -31,10 +31,7 @@ class Router:
             if not matched:
                 continue
             error_callback = http405
-            print('method: {}'.format(method))
             url_vars = matched.groupdict()
-            print('url_vars: {}'.format(url_vars))
-            print('matched_goupdict: {}'.format(matched.groupdict))
             if method == rts['method']:
                 return rts['callback'], url_vars
         return error_callback, {}

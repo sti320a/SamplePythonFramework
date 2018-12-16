@@ -5,7 +5,7 @@ app = App()
 
 @app.route('/(?P<name>\w+)', 'GET')
 def hello(request, name): 
-    return Response('Hello {name}'.format(name=name))
+    return Response('Hello {name}'.format(name=name), headers={'foo':'bar'})
 
 @app.route('/night', 'GET')
 def goodnight(request):
