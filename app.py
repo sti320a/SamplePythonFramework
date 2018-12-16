@@ -162,7 +162,7 @@ class App:
         start_response(response.status_code, response.header_list)
 
         if isinstance(response, TemplateResponse):
-            return [response.render_body(self.jinja2_environment).encode('utf-8')]
+            return [response.render_body(self.jinja2_environment)]
 
         return response.body
 
