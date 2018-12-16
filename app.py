@@ -1,3 +1,5 @@
+from http.client import responses as http_response
+from wsgiref.headers import Headers
 import re
 
 
@@ -52,11 +54,66 @@ class Request:
         return self.environ['REQUEST_METHOD'].upper()
 
     @property
+    def forms(self):
+        form = cgi.FieldStorage(
+            fp=self.environ['wsgi.input'],
+            environ=self.environ,
+            keep_blank_values=True,
+        )
+        params = {k: form[k].value for k in form}
+        return params
+
+    @property
+    def query(self):
+        return parse_qs(self.environ['QUERY_STRING'])
+
+    @property
     def body(self):
         if self._body is None:
             content_length = int(self.environ.get('CONTENT_LENGTH', 0))
             self._body = self.environ['wsgi.input'].read(content_length)
             return self._body
+
+    @property
+    def text(self):
+        return self.body.decode(self.charset)
+
+    @property
+    def json(self):
+        return json.loads(self.body)
+
+
+
+class Response:
+    default_status = 200
+    default_charset = 'utf-8'
+    default_content_type = 'text/html; charser=UTF-8'
+
+    def __init__(self, body='', status=None, headers=None, charset=None):
+        self._body = body
+        self.status = status or self.default_status
+        self.headers = Headers()
+        self.charset = charset or self.default_charset
+
+        if headers:
+            for name, value in headers.items():
+                self.headers.add_header(name, value)
+
+    @property
+    def status_code(self):
+        return "%d %s" % (self.status, http_response[self.status])
+
+    @property
+    def header_list(self):
+        if 'Content-Type' not in self.headers:
+            self.headers.add_header('Content-Type', self.default_content_type)
+            return self.headers.items()
+
+    @property
+    def body(self):
+        if isinstance(self._body, str):
+            return [self._body.encode(self.charset)]
+        return [self._body]
 
 class App:
     def __init__(self):
@@ -70,6 +127,8 @@ class App:
 
     def __call__(self, env, start_response):
         request = Request(env)
-        callback, kwargs = self.router.match(request.method, request.path)
-        return callback(env, start_response, **kwargs)
+        callback, url_vars = self.router.match(request.method, request.path)
+        response = callback(request, **url_vars)
+        start_response(response.status_code, response.header_list)
+        return response.body
 

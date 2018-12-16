@@ -1,21 +1,15 @@
-from app import App
+from app import App, Response
 from wsgiref.simple_server import make_server
 
 app = App()
 
 @app.route('/(?P<name>\w+)', 'GET')
-# TODO:  request / start_responseの引数を入力不要に
-def hello(request, start_response, name): 
-    start_response('200 OK', [('Content-type', 'text/plain; charset=utf-8')])
-    # encodeを不要にしたい
-    body = 'Hello {name}'.format(name=name)
-    return [body.encode("utf-8")]
+def hello(request, name): 
+    return Response('Hello {name}'.format(name=name))
 
 @app.route('/night', 'GET')
-def goodnight(request, start_response):
-    start_response('200 OK', [('Content-type', 'text/plain; charset=utf-8')])
-    return ['Good night'.encode("utf-8")]
-
+def goodnight(request):
+    return Response('Hello World')
 
 if __name__ == '__main__':
     httpd = make_server('', 8000, app)
