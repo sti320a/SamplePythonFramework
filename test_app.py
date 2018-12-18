@@ -14,7 +14,7 @@ def hello(request, name):
 
 @app.route('/night', 'GET')
 def goodnight(request):
-    return Response('Hello World')
+    return Response('Hello Night')
 
 if __name__ == '__main__':
     httpd = make_server('', 8000, app)
