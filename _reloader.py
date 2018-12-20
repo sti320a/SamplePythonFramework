@@ -63,7 +63,22 @@ class WatchDogReloaderLoop(ReloaderLoop):
                 if filename.endwith(('.pyc', '.pyo', '.py')):
                     self.trigger_reload(filename)
 
-        # class _CustomHandler(FileSystemEventHandler):
+        class _CustomHandler(FileSystemEventHandler):
+
+            def on_created(self, event):
+                _check_modification(event.src_path)
+
+            def on_modified(self, event):
+                _check_modification(event.src_path)
+
+            def on_moved(self, event):
+                _check_modification(event.src_path)
+                _check_modification(event.dest_path)
+
+            def on_deleted(self, event):
+                _check_modification(event.src_path)
+
+
 
 
 
