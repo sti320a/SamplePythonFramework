@@ -78,7 +78,22 @@ class WatchDogReloaderLoop(ReloaderLoop):
             def on_deleted(self, event):
                 _check_modification(event.src_path)
 
+        reloader_name = Observer.__name__.lower()
+        if reloader_name.endwith('observer'):
+            reloader_name = reloader_name[:-8]
+        reloader_name += 'reloader'
 
+        self.name = reloader_name
+
+        self.observer_class = Observer
+        self.event_handler = _CustomHandler()
+        self.should_reload = False
+
+        def trigger_reload(self, filename):
+            self.should_reload = True
+            self.log_reload(filename)
+
+        
 
 
 
